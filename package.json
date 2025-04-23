@@ -1,0 +1,22 @@
+{
+  "name": "decrypt-tool",
+  "version": "1.0.0",
+  "description": "أداة لفك التشفير باستخدام Node.js وExpress",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "decrypt",
+    "tool",
+    "nodejs",
+    "express"
+  ],
+  "author": "عبدالرحمن",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "body-parser": "^1.19.0",
+    "crypto-js": "^4.0.0"
+  }
+}
