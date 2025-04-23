@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>🔐 CyberChef Clone</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>🔓 CyberChef Clone</h1>
+        <h1>🔓 CyberChef Clone (JS)</h1>
         <textarea id="input" placeholder="أدخل البيانات المشفرة هنا..."></textarea>
 
         <div class="operations">
@@ -27,29 +27,71 @@
     </div>
 
     <script>
-        async function run() {
+        function decodeBase64(data) {
+            try {
+                return atob(data);
+            } catch {
+                return "[Base64] ❌ خطأ";
+            }
+        }
+
+        function decodeURL(data) {
+            try {
+                return decodeURIComponent(data);
+            } catch {
+                return "[URL] ❌ خطأ";
+            }
+        }
+
+        function decodeHex(data) {
+            try {
+                const hex = data.replace(/[^0-9a-fA-F]/g, '');
+                let result = '';
+                for (let i = 0; i < hex.length; i += 2) {
+                    result += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+                }
+                return result;
+            } catch {
+                return "[Hex] ❌ خطأ";
+            }
+        }
+
+        function decodeRot13(data) {
+            return data.replace(/[a-zA-Z]/g, c =>
+                String.fromCharCode(
+                    (c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26
+                )
+            );
+        }
+
+        const operations = {
+            base64: decodeBase64,
+            url: decodeURL,
+            hex: decodeHex,
+            rot13: decodeRot13,
+        };
+
+        function run() {
             const input = document.getElementById("input").value;
-            const checkboxes = document.querySelectorAll("input[type=checkbox]:checked");
-            const steps = Array.from(checkboxes).map(cb => cb.value);
+            const steps = Array.from(document.querySelectorAll("input[type=checkbox]:checked"))
+                               .map(cb => cb.value);
 
-            const res = await fetch("/process", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ input, steps })
-            });
+            let current = input;
+            let outputSteps = "";
+            for (let step of steps) {
+                const before = current;
+                current = operations[step](current);
+                outputSteps += `
+                    <div class="step">
+                        <b>${step.toUpperCase()}</b><br>
+                        <i>قبل:</i> ${before}<br>
+                        <i>بعد:</i> ${current}<br><hr>
+                    </div>
+                `;
+            }
 
-            const data = await res.json();
-            document.getElementById("result").value = data.result;
-
-            const stepsDiv = document.getElementById("steps");
-            stepsDiv.innerHTML = "";
-            data.steps.forEach(step => {
-                stepsDiv.innerHTML += `<div class="step">
-                    <b>${step.method}</b><br>
-                    <i>قبل:</i> ${step.before}<br>
-                    <i>بعد:</i> ${step.after}<br><hr>
-                </div>`;
-            });
+            document.getElementById("steps").innerHTML = outputSteps;
+            document.getElementById("result").value = current;
         }
     </script>
 </body>
